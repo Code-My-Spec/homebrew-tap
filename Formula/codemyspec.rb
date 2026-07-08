@@ -4,14 +4,14 @@
 # + start.boot on disk, no runtime extraction). `brew services` registers it
 # with launchd, so there's no Shawl and no MSI on macOS.
 #
-# v1.5.33 / 1.5.33 / 31a0a842520080d05519b98ac617dbbab791275babb6f0b6a5eb1a1de395c3da are templated by the
+# v1.5.34 / 1.5.34 / 28a2f943b789460d3abcd34ca0e2dd323136a2c8335984a1a1ab770ee76552ca are templated by the
 # release workflow (release-extension.yml) into the published copy.
 class Codemyspec < Formula
   desc "CodeMySpec local server (Phoenix + MCP) on port 4003"
   homepage "https://codemyspec.com"
-  version "1.5.33"
-  url "https://github.com/Code-My-Spec/plugins/releases/download/v1.5.33/cms-darwin-arm64.tar.gz"
-  sha256 "31a0a842520080d05519b98ac617dbbab791275babb6f0b6a5eb1a1de395c3da"
+  version "1.5.34"
+  url "https://github.com/Code-My-Spec/plugins/releases/download/v1.5.34/cms-darwin-arm64.tar.gz"
+  sha256 "28a2f943b789460d3abcd34ca0e2dd323136a2c8335984a1a1ab770ee76552ca"
 
   def install
     # The tarball extracts to bin/, lib/, releases/, erts-* at top level.
@@ -23,6 +23,11 @@ class Codemyspec < Formula
       exec "#{libexec}/bin/code_my_spec_cli" "$@"
     SH
     chmod 0755, bin/"cms"
+
+    # cms-mcp-relay: the standalone Go stdio<->HTTP MCP bridge that Claude Code
+    # spawns for the plugin's local MCP server. Self-contained (no RELEASE_ROOT),
+    # so a plain symlink into bin/ is enough.
+    bin.install_symlink libexec/"bin/cms-mcp-relay"
   end
 
   service do
