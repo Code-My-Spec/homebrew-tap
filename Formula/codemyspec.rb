@@ -4,14 +4,14 @@
 # + start.boot on disk, no runtime extraction). `brew services` registers it
 # with launchd, so there's no Shawl and no MSI on macOS.
 #
-# v1.8.0 / 1.8.0 / 5c4e9f2b2a608c8fabe34c2c745cc5b5bedd4667b38fb4ecce9a1955c85c53d6 are templated by the
+# v1.8.1 / 1.8.1 / 3321042d97a817881e21c95dfe9f6bf90450e5a0d3007de326507ee09c66a6d0 are templated by the
 # release workflow (release-extension.yml) into the published copy.
 class Codemyspec < Formula
   desc "CodeMySpec local server (Phoenix + MCP) on port 4003"
   homepage "https://codemyspec.com"
-  version "1.8.0"
-  url "https://github.com/Code-My-Spec/plugins/releases/download/v1.8.0/cms-darwin-arm64.tar.gz"
-  sha256 "5c4e9f2b2a608c8fabe34c2c745cc5b5bedd4667b38fb4ecce9a1955c85c53d6"
+  version "1.8.1"
+  url "https://github.com/Code-My-Spec/plugins/releases/download/v1.8.1/cms-darwin-arm64.tar.gz"
+  sha256 "3321042d97a817881e21c95dfe9f6bf90450e5a0d3007de326507ee09c66a6d0"
 
   def install
     # The tarball extracts to bin/, lib/, releases/, erts-* at top level.
@@ -23,6 +23,17 @@ class Codemyspec < Formula
       exec "#{libexec}/bin/code_my_spec_cli" "$@"
     SH
     chmod 0755, bin/"cms"
+
+    # `cms migrate` cannot be a subcommand: the release launcher validates
+    # command names against its own list and rejects unknown ones long before
+    # our code runs. The capability is reached by env var, so this exposes it
+    # under the name the docs use.
+    (bin/"cms-migrate").write <<~SH
+      #!/bin/bash
+      export CMS_MIGRATE=1
+      exec "#{libexec}/bin/code_my_spec_cli" start "$@"
+    SH
+    chmod 0755, bin/"cms-migrate"
 
     # cms-mcp-relay: the standalone Go stdio<->HTTP MCP bridge that Claude Code
     # spawns for the plugin's local MCP server. Self-contained (no RELEASE_ROOT),
