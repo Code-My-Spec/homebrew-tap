@@ -4,14 +4,14 @@
 # + start.boot on disk, no runtime extraction). `brew services` registers it
 # with launchd, so there's no Shawl and no MSI on macOS.
 #
-# v2.0.10 / 2.0.10 / 17fa6b5bf175e94c326e1c9f9f7bf3b1ae1e6c838d8e56c104c83c3934ee3725 are templated by the
+# v2.0.701 / 2.0.701 / a2d2b7a18cf58cb809ff4f3b97fbb285fa50cc01ee7cd89c48124e5f834c8a25 are templated by the
 # release workflow (release-extension.yml) into the published copy.
 class Codemyspec < Formula
   desc "CodeMySpec local server (Phoenix + MCP) on port 4003"
   homepage "https://codemyspec.com"
-  version "2.0.10"
-  url "https://github.com/Code-My-Spec/plugins/releases/download/v2.0.10/cms-darwin-arm64.tar.gz"
-  sha256 "17fa6b5bf175e94c326e1c9f9f7bf3b1ae1e6c838d8e56c104c83c3934ee3725"
+  version "2.0.701"
+  url "https://github.com/Code-My-Spec/plugins/releases/download/v2.0.701/cms-darwin-arm64.tar.gz"
+  sha256 "a2d2b7a18cf58cb809ff4f3b97fbb285fa50cc01ee7cd89c48124e5f834c8a25"
 
   def install
     # The tarball extracts to bin/, lib/, releases/, erts-* at top level.
@@ -20,7 +20,7 @@ class Codemyspec < Formula
     # launcher resolves RELEASE_ROOT from libexec, not the bin symlink.
     (bin/"cms").write <<~SH
       #!/bin/bash
-      exec "#{libexec}/bin/code_my_spec_cli" "$@"
+      exec "#{libexec}/bin/cms_harness" "$@"
     SH
     chmod 0755, bin/"cms"
 
@@ -31,7 +31,7 @@ class Codemyspec < Formula
     (bin/"cms-migrate").write <<~SH
       #!/bin/bash
       export CMS_MIGRATE=1
-      exec "#{libexec}/bin/code_my_spec_cli" start "$@"
+      exec "#{libexec}/bin/cms_harness" start "$@"
     SH
     chmod 0755, bin/"cms-migrate"
 
@@ -51,6 +51,24 @@ class Codemyspec < Formula
     keep_alive true
     log_path var/"log/codemyspec.log"
     error_log_path var/"log/codemyspec.log"
+  end
+
+  # Not `depends_on "vibium"`: vibium ships on npm, so Homebrew has no formula to
+  # depend on and this is the strongest form available. Issue ebc5586d asked for
+  # a prerequisite; what a prerequisite would have bought is a person finding out
+  # at install time instead of never, and the reason it matters is issue
+  # 02b03d04 — an agent on a machine with no browser does not fail, it just never
+  # looks at anything.
+  def caveats
+    <<~EOS
+      Agents run by CodeMySpec drive a browser through vibium, which is not
+      bundled. Without it they still run, and quietly cannot look at a page:
+
+        npm install -g vibium
+
+      A working copy's page reports which of the three it is — a browser that is
+      ready, absent, or installed and not answering.
+    EOS
   end
 
   test do
