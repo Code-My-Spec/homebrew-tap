@@ -4,14 +4,14 @@
 # + start.boot on disk, no runtime extraction). `brew services` registers it
 # with launchd, so there's no Shawl and no MSI on macOS.
 #
-# v2.0.729 / 2.0.729 / 1d8a6af6d6c3d31c77e28b425eb43968d99706da0850204dc50afcdfb20dc0f8 are templated by the
+# v2.0.730 / 2.0.730 / a7ef1ab1ff45f08d7124d8705a56686dc28cb2414bfe7720daa8bee6a75c4eec are templated by the
 # release workflow (release-extension.yml) into the published copy.
 class Codemyspec < Formula
   desc "CodeMySpec local server (Phoenix + MCP) on port 4003"
   homepage "https://codemyspec.com"
-  version "2.0.729"
-  url "https://github.com/Code-My-Spec/plugins/releases/download/v2.0.729/cms-darwin-arm64.tar.gz"
-  sha256 "1d8a6af6d6c3d31c77e28b425eb43968d99706da0850204dc50afcdfb20dc0f8"
+  version "2.0.730"
+  url "https://github.com/Code-My-Spec/plugins/releases/download/v2.0.730/cms-darwin-arm64.tar.gz"
+  sha256 "a7ef1ab1ff45f08d7124d8705a56686dc28cb2414bfe7720daa8bee6a75c4eec"
 
   def install
     # The tarball extracts to bin/, lib/, releases/, erts-* at top level.
