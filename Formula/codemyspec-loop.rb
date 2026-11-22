@@ -6,9 +6,9 @@
 class CodemyspecLoop < Formula
   desc "CodeMySpec loop: runs agents on works, dials the CodeMySpec server"
   homepage "https://codemyspec.com"
-  version "3.0.1"
-  url "https://github.com/Code-My-Spec/workflow/releases/download/v3.0.1/codemyspec-loop-darwin-arm64.tar.gz"
-  sha256 "b146b36867a0f96a81aca64b266fc57fb989801596253d59f526032b8fbca57f"
+  version "3.0.2"
+  url "https://github.com/Code-My-Spec/workflow/releases/download/v3.0.2/codemyspec-loop-darwin-arm64.tar.gz"
+  sha256 "f34638facad7ea13e1200275c81f305fa90c0d79304042394be2087e03dbb945"
 
   depends_on arch: :arm64
   depends_on "git"
