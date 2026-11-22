@@ -1,78 +1,56 @@
-# Homebrew formula for CodeMySpec (macOS).
+# Homebrew formula for the CodeMySpec loop (macOS, Apple silicon).
 #
-# Installs the plain `mix release` tarball — a self-contained OTP release (ERTS
-# + start.boot on disk, no runtime extraction). `brew services` registers it
-# with launchd, so there's no Shawl and no MSI on macOS.
-#
-# v2.0.834 / 2.0.834 / 1cb03267a0e0b75075e3cdc209e84a9622ef3dea710d245e75439c8327e81c80 are templated by the
-# release workflow (release-extension.yml) into the published copy.
+# Installs the plain `mix release` tarball that `just package` builds (bundled
+# ERTS, no Elixir/Erlang needed) and exposes it as the `workflow` command.
+# A template: `just release` fills in 3.0.6, https://github.com/Code-My-Spec/workflow/releases/download/v3.0.6/codemyspec-darwin-arm64.tar.gz and b49d4357f5328b6f0cbc2926ac9b7ffec1358c1cc8e3f83c7f7c1395f2a2459e and
+# writes the result to the tap (see packaging/README.md).
 class Codemyspec < Formula
-  desc "CodeMySpec local server (Phoenix + MCP) on port 4003"
+  desc "CodeMySpec loop: runs agents on works, dials the CodeMySpec server"
   homepage "https://codemyspec.com"
-  version "2.0.834"
-  url "https://github.com/Code-My-Spec/plugins/releases/download/v2.0.834/cms-darwin-arm64.tar.gz"
-  sha256 "1cb03267a0e0b75075e3cdc209e84a9622ef3dea710d245e75439c8327e81c80"
+  version "3.0.6"
+  url "https://github.com/Code-My-Spec/workflow/releases/download/v3.0.6/codemyspec-darwin-arm64.tar.gz"
+  sha256 "b49d4357f5328b6f0cbc2926ac9b7ffec1358c1cc8e3f83c7f7c1395f2a2459e"
+
+  depends_on arch: :arm64
+  depends_on "git"
+  depends_on "just"
+  # The release's crypto NIF links Homebrew's OpenSSL.
+  depends_on "openssl@3"
 
   def install
-    # The tarball extracts to bin/, lib/, releases/, erts-* at top level.
+    # The tarball extracts to bin/, lib/, releases/, erts-*.
     libexec.install Dir["*"]
-    # Expose the release launcher as `cms`. A wrapper (not a symlink) so the
-    # launcher resolves RELEASE_ROOT from libexec, not the bin symlink.
-    (bin/"cms").write <<~SH
+    # A wrapper, not a symlink, so the launcher resolves its root from libexec.
+    (bin/"workflow").write <<~SH
       #!/bin/bash
-      exec "#{libexec}/bin/cms_harness" "$@"
+      exec "#{libexec}/bin/workflow" "$@"
     SH
-    chmod 0755, bin/"cms"
-
-    # `cms migrate` cannot be a subcommand: the release launcher validates
-    # command names against its own list and rejects unknown ones long before
-    # our code runs. The capability is reached by env var, so this exposes it
-    # under the name the docs use.
-    (bin/"cms-migrate").write <<~SH
-      #!/bin/bash
-      export CMS_MIGRATE=1
-      exec "#{libexec}/bin/cms_harness" start "$@"
-    SH
-    chmod 0755, bin/"cms-migrate"
-
-    # cms-mcp-relay: the standalone Go stdio<->HTTP MCP bridge that Claude Code
-    # spawns for the plugin's local MCP server. Self-contained (no RELEASE_ROOT),
-    # so a plain symlink into bin/ is enough.
-    bin.install_symlink libexec/"bin/cms-mcp-relay"
+    chmod 0755, bin/"workflow"
   end
 
   service do
-    # `cms start` is the mix-release launcher's foreground boot command — it
-    # runs the OTP app in the foreground for launchd (via `brew services`) to
-    # supervise; keep_alive restarts it on exit. (`server` is NOT a release
-    # launcher command, only a dev/`mix` alias.) The old `cms start` daemon
-    # double-fork was already inert on the plain release and has been removed.
-    run [opt_bin/"cms", "start"]
+    run [opt_bin/"workflow", "start"]
     keep_alive true
+    # launchd gives a bare PATH; the loop shells out to `claude`, `git` and `just`.
+    environment_variables PATH: "#{HOMEBREW_PREFIX}/bin:#{Dir.home}/.local/bin:/usr/bin:/bin"
     log_path var/"log/codemyspec.log"
     error_log_path var/"log/codemyspec.log"
   end
 
-  # Not `depends_on "vibium"`: vibium ships on npm, so Homebrew has no formula to
-  # depend on and this is the strongest form available. Issue ebc5586d asked for
-  # a prerequisite; what a prerequisite would have bought is a person finding out
-  # at install time instead of never, and the reason it matters is issue
-  # 02b03d04 — an agent on a machine with no browser does not fail, it just never
-  # looks at anything.
   def caveats
     <<~EOS
-      Agents run by CodeMySpec drive a browser through vibium, which is not
-      bundled. Without it they still run, and quietly cannot look at a page:
+      Sign the loop in to its server, once ~/.workflow/config.json names it:
+        workflow sign-in
 
-        npm install -g vibium
+      Install Claude Code (the `claude` command) yourself; brew does not provide it:
+        curl -fsSL https://claude.ai/install.sh | bash
+      then run `claude` once to sign in.
 
-      A working copy's page reports which of the three it is — a browser that is
-      ready, absent, or installed and not answering.
+      The loop listens on 127.0.0.1:4010; set WORKFLOW_PORT to change it.
     EOS
   end
 
   test do
-    assert_match version.to_s,
-      shell_output("#{bin}/cms eval 'IO.puts Application.spec(:code_my_spec, :vsn)'")
+    assert_match "workflow", shell_output("#{bin}/workflow version")
   end
 end
