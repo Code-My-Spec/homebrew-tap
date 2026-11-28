@@ -3,13 +3,13 @@
 # Installs the plain `mix release` tarball that `just package` builds (bundled
 # ERTS, no Elixir/Erlang needed) and exposes it as the `workflow` command.
 # A template: its url and sha256 are the only lines to fill in (`just release`
-# fills https://github.com/Code-My-Spec/workflow/releases/download/v3.0.15/codemyspec-darwin-arm64.tar.gz and ded69ee1694c12db3bccfb59a913266b31db717b39cc0dcea5b969f1182c1eea and writes the result to the tap; see
+# fills https://github.com/Code-My-Spec/workflow/releases/download/v3.0.16/codemyspec-darwin-arm64.tar.gz and 00eb7ca531c48e79c3e7e3852029ee514b785891fdc75877932a2afcb5d2e27f and writes the result to the tap; see
 # packaging/README.md). Homebrew reads the version from the url's v<version>.
 class Codemyspec < Formula
   desc "CodeMySpec loop: runs agents on works, dials the CodeMySpec server"
   homepage "https://codemyspec.com"
-  url "https://github.com/Code-My-Spec/workflow/releases/download/v3.0.15/codemyspec-darwin-arm64.tar.gz"
-  sha256 "ded69ee1694c12db3bccfb59a913266b31db717b39cc0dcea5b969f1182c1eea"
+  url "https://github.com/Code-My-Spec/workflow/releases/download/v3.0.16/codemyspec-darwin-arm64.tar.gz"
+  sha256 "00eb7ca531c48e79c3e7e3852029ee514b785891fdc75877932a2afcb5d2e27f"
 
   depends_on arch: :arm64
   depends_on "git"
